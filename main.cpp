@@ -1,255 +1,246 @@
 #include <iomanip>
 #include <ios>
-
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 
-using namespace std; 
+#include "TextTable.h"
 
-
+using namespace std;
 
 class KalahBoard{
 public:
-    int Player1Houses[6];
+    vector<int> Player1Houses;
     int Player1Store;
-    int Player2Houses[6];
+    vector<int> Player2Houses;
     int Player2Store;
 
-    //Init board
-    KalahBoard(int seeds) 
-        :Player1Store(0), Player2Store(0)
-    {
-        for(int i = 0; i != 6; i++){
-            Player1Houses[i] = seeds;
-        }
-        for(int i = 0; i != 6; i++){
-            Player2Houses[i] = seeds;
-        }
-        
-    }
+    // Init board
+    KalahBoard(int seeds)
+        : Player1Houses(6, seeds), Player1Store(0), Player2Houses(6, seeds), Player2Store(0){}
 
-    //Prints current status of board to console
+
+    // Prints current status of board to console
     void printBoard(){
-        
-        string topAndBottom = "";
-        string row1 = "";
-        string row2 = "";
-        string row3 = "";
 
+        TextTable table('-', '|', '+');
 
-        //Add player1 store
-        row2 = "* " + to_string(Player1Store) + ' ';
-        int row2StartLength = row2.length();
-        
-
-        row1 = '*';
-        //Add appropiate number of spaces to row1
-        for(int i = 0; i != row2StartLength; i++ ){
-            row1 += ' ';
+        // Button row
+        table.add(" Button:  ");
+        for (int i = 0; i != 6; i++){
+            table.add("   " + to_string(i + 1) + "   ");
         }
-        //Add values to row 1
-        for(int i = 0; i != 6; i++ ){
-            row1 += '(' + to_string(i+1) + ')' + " - " + to_string(Player1Houses[i]) + "  ";
+        table.add("");
+        table.endOfRow();
+
+        // Player 1 row
+        table.add("");
+        for (int i = 0; i != 6; i++){
+            table.add("   " + to_string(Player1Houses[i]));
         }
+        table.add("");
+        table.endOfRow();
 
-
-
-        //Add spaces to row 2
-        for(int i = 0; i != row1.length()-row2StartLength-1; i++ ){
-            row2 += ' ';
+        // Stores
+        table.add("    " + to_string(Player1Store));
+        for (int i = 0; i != 6; i++){
+            table.add("");
         }
-        //Add player2 store
-        row2 += ' '+ to_string(Player2Store) + " *";
+        table.add("    " + to_string(Player2Store) + "    ");
+        table.endOfRow();
 
-
-
-
-        //Add spaces and * to row1
-        int currentLength = row1.length();
-        for(int i = 0; i != row2.length()-currentLength-1; i++ ){
-            row1 += ' ';
+        // Player 2 row
+        table.add("");
+        for (int i = 0; i != 6; i++){
+            table.add("   " + to_string(Player2Houses[i]));
         }
-            row1 += '*';
+        table.add("");
+        table.endOfRow();
 
-
-
-
-
-        row3 = '*';
-        //Add appropiate number of spaces to row3
-        for(int i = 0; i != row2StartLength; i++ ){
-            row3 += ' ';
-        }
-        //Add values to row 3
-        for(int i = 0; i != 6; i++ ){
-            row3 += '(' + to_string(i+1) + ')' + " - " + to_string(Player2Houses[i]) + "  ";
-        }
-
-        //Add spaces and * to row3
-        currentLength = row3.length();
-        for(int i = 0; i != row2.length()-currentLength-1; i++ ){
-            row3 += ' ';
-        }
-            row3 += '*';
-
-        
-        for(int i = 0; i != row2.length(); i++){
-            topAndBottom += '*';
-        }
-
-        cout << topAndBottom <<endl;
-        cout << row1 <<endl;
-        cout << row2 <<endl;
-        cout << row3 <<endl;
-        cout << topAndBottom <<endl;
+        std::cout << table;
     }
-
 
     int Player1Move(int index){
-        //Pick up all seeds
+        // Pick up all seeds
         int numberOfSeeds = Player1Houses[index];
         Player1Houses[index] = 0;
-        //For keeping track of hand
-        int currentHouse = index-1;
+        // For keeping track of hand
+        int currentHouse = index - 1;
         bool Player2Side = false;
-        
 
-        //Put in appropiate houses
-        while(numberOfSeeds != 0){
-            //If we are in store
-            if(currentHouse == -1){
+        // Put in appropiate houses
+        while (numberOfSeeds != 0){
+            // If we are in store
+            if (currentHouse == -1){
                 Player1Store++;
                 currentHouse = 0;
                 Player2Side = true;
                 numberOfSeeds--;
-            }
-
-            //Our side
-            if(Player2Side == false){
-                while(currentHouse != -1 && numberOfSeeds != 0){
-                    Player1Houses[currentHouse]++;  //Add one seed to house
-                    numberOfSeeds--;
-                    currentHouse--;                 //Move to next house
+                // If we are out of seeds in our store
+                if (numberOfSeeds == 0){
+                    return -2;
                 }
-
             }
-            //Opponents side
+
+            // Our side
+            if (Player2Side == false){
+                while (currentHouse != -1 && numberOfSeeds != 0){
+                    Player1Houses[currentHouse]++; // Add one seed to house
+                    numberOfSeeds--;
+                    currentHouse--; // Move to next house
+                }
+            }
+            // Opponents side
             else{
-                if(currentHouse == 5){
+                if (currentHouse == 5){
                     Player2Houses[currentHouse]++;
                     Player2Side = false;
                     numberOfSeeds--;
                 }
-                while(currentHouse != 5 && numberOfSeeds != 0){
-                    Player2Houses[currentHouse]++;  //Add one seed to house
-                    currentHouse++;                 //Move to next house
+                while (currentHouse != 5 && numberOfSeeds != 0){
+                    Player2Houses[currentHouse]++; // Add one seed to house
+                    currentHouse++;                // Move to next house
                     numberOfSeeds--;
                 }
             }
-
         }
         return currentHouse;
     }
 
-
     int Player2Move(int index){
-        //Pick up all seeds
+        // Pick up all seeds
         int numberOfSeeds = Player2Houses[index];
         Player2Houses[index] = 0;
-        //For keeping track of hand
-        int currentHouse = index+1;
+        // For keeping track of hand
+        int currentHouse = index + 1;
         bool Player1Side = false;
-        
 
-        //Put in appropiate houses
-        while(numberOfSeeds != 0){
-            //If we are in store
-            if(currentHouse == 6){
+        // Put in appropiate houses
+        while (numberOfSeeds != 0){
+            // If we are in store
+            if (currentHouse == 6){
                 Player2Store++;
                 currentHouse = 5;
                 Player1Side = true;
                 numberOfSeeds--;
-            }
-
-            //Our side
-            if(Player1Side == false){
-                while(currentHouse != 6 && numberOfSeeds != 0){
-                    Player2Houses[currentHouse]++;  //Add one seed to house
-                    numberOfSeeds--;
-                    currentHouse++;                 //Move to next house
+                // If we are out of seeds in our store
+                if (numberOfSeeds == 0){
+                    return -2;
                 }
-
             }
-            //Opponent side
+
+            // Our side
+            if (Player1Side == false){
+                while (currentHouse != 6 && numberOfSeeds != 0){
+                    Player2Houses[currentHouse]++; // Add one seed to house
+                    numberOfSeeds--;
+                    currentHouse++; // Move to next house
+                }
+            }
+            // Opponent side
             else{
-                if(currentHouse == 0){
+                if (currentHouse == 0){
                     Player1Houses[currentHouse]++;
                     Player1Side = false;
                     numberOfSeeds--;
                 }
-                while(currentHouse != 0 && numberOfSeeds != 0){
-                    Player1Houses[currentHouse]++;  //Add one seed to house
-                    currentHouse--;                 //Move to next house
+                while (currentHouse != 0 && numberOfSeeds != 0){
+                    Player1Houses[currentHouse]++; // Add one seed to house
+                    currentHouse--;                // Move to next house
                     numberOfSeeds--;
                 }
             }
-
         }
         return currentHouse;
     }
 
+    int playerHasEmptyHouses(){
+        if (all_of(Player1Houses.begin(), Player1Houses.end(), [](int i){ return i == 0; })){
+            return 1;
+        }
+        else if (all_of(Player2Houses.begin(), Player2Houses.end(), [](int i){ return i == 0; })){
+            return 2;
+        }
+        else{
+            return 0;
+        }
+    }
 
-
-
-
-
-    
+    bool isHouseEmpty(int player, int index){
+        if (player == 1){
+            if (Player1Houses[index] == 0){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if (Player2Houses[index] == 0){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
 };
 
-int main(){ 
-
+int main(){
 
     KalahBoard board(6);
     int index, currentHouse;
 
-    while(1){
-        //Player 1's turn
-        while(1){
-            board.printBoard();
-            cout << "Player 1 moves: " << endl;
-            cin >> index;
-            if (index < 1 || index > 6){
-                cout << "Illegal move, try again!" << endl;
-            }
-            else{
-                currentHouse = board.Player1Move(index-1);
-                cout << currentHouse << endl;
-                if (currentHouse != 0){
-                    break;
+    while (1){
+        // Player 1's turn
+        while (1){
+            if (board.playerHasEmptyHouses() == 1){
+                if (board.Player1Store > board.Player2Store){
+                    cout << "Player 1 won!" << endl;
+                    return 1;
+                }else if (board.Player1Store == board.Player2Store){
+                    cout << "Draw :|" << endl;
+                    return 0;
+                }
+            }else{
+                board.printBoard();
+                cout << "Player 1 moves: " << endl;
+                cin >> index;
+                if (index < 1 || index > 6 || board.isHouseEmpty(1, index - 1) == true){
+                    cout << "Illegal move, try again!" << endl;
+                }else{
+                    currentHouse = board.Player1Move(index - 1);
+                    if (currentHouse != -2){
+                        break;
+                    }
                 }
             }
         }
-        //Player 2's turn
-        while(1){
-            board.printBoard();
-            cout << "Player 2 moves: " << endl;
-            cin >> index;
-            if (index < 1 || index > 6){
-                cout << "Illegal move, try again!" << endl;
-            }
-            else{
-                currentHouse = board.Player2Move(index-1);
-                cout << currentHouse << endl;
-                if (currentHouse != 5){
-                    break;
+        // Player 2's turn
+        while (1){
+            if (board.playerHasEmptyHouses() == 2){
+                if (board.Player1Store < board.Player2Store){
+                    cout << "Player 2 won!" << endl;
+                    return 2;
+                }else if (board.Player1Store == board.Player2Store){
+                    cout << "Draw :|" << endl;
+                    return 0;
+                }
+            }else{
+                board.printBoard();
+                cout << "Player 2 moves: " << endl;
+                cin >> index;
+                //index = rand() % 6 + 1;
+                cout << index <<endl;
+                if (index < 1 || index > 6 || board.isHouseEmpty(2, index - 1) == true){
+                    cout << "Illegal move, try again!" << endl;
+                }else{
+                    currentHouse = board.Player2Move(index - 1);
+                    if (currentHouse != -2){
+                        break;
+                    }
                 }
             }
         }
-        
-        
     }
-    
 
-
-    return 0;
+    return -1;
 }
