@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include<limits>
 
 #include "TextTable.h"
 
@@ -36,6 +37,7 @@ public:
 
         // Player 1 row
         table.add("");
+
         for (int i = 0; i != 6; i++){
             table.add("   " + to_string(Player1Houses[i]));
         }
@@ -203,7 +205,13 @@ int main(){
             }else{
                 board.printBoard();
                 cout << "Player 1 moves: " << endl;
-                cin >> index;
+                
+                while (!(cin >> index)){
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid input.  Try again!" << endl;
+                }
+
                 if (index < 1 || index > 6 || board.isHouseEmpty(1, index - 1) == true){
                     cout << "Illegal move, try again!" << endl;
                 }else{
@@ -227,9 +235,15 @@ int main(){
             }else{
                 board.printBoard();
                 cout << "Player 2 moves: " << endl;
-                cin >> index;
+                
+                while (!(cin >> index)){
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "Invalid input.  Try again!" << endl;
+                }
+                
                 //index = rand() % 6 + 1;
-                cout << index <<endl;
+                //cout << index <<endl;
                 if (index < 1 || index > 6 || board.isHouseEmpty(2, index - 1) == true){
                     cout << "Illegal move, try again!" << endl;
                 }else{
